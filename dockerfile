@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-RUN apk add bash curl docker-cli openssh tini gcompat libstdc++
+RUN apk add bash curl docker-cli docker-cli-compose docker-cli-buildx openssh tini gcompat libstdc++ 
 RUN bash <(curl https://zsh.onlh.de)
 RUN mkdir -p /root/.lhzsh.custom/ && echo NOTRECOMENDED_DONTUPDATE=true > /root/.lhzsh.custom/start.zsh
 RUN rm /etc/motd
