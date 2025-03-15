@@ -1,0 +1,53 @@
+#!/bin/sh
+# set -e
+
+echo Leon\'s Shell Init...
+
+start_ssh() {
+    # Falls /persistent/etc/ssh nicht existiert, erstelle es und kopiere den ursprünglichen Inhalt
+    if [ ! -d /persistent/etc/ssh ]; then
+        echo Copying SSH Config Files...
+        mkdir -p /persistent/etc/ssh
+        cp -va /etc/ssh/* /persistent/etc/ssh/
+    fi
+
+    if [ ! -d /persistent/root ]; then
+        echo Copying Home Folder...
+        mkdir -p /persistent/root
+        cp -va /root /persistent/
+    fi
+
+    # Nur wenn /etc/ssh kein Symlink ist, wird es ersetzt
+    if [ ! -L /etc/ssh ]; then
+        echo Linking SSH Config
+        rm -rf /etc/ssh
+        ln -s /persistent/etc/ssh /etc/ssh
+    fi
+
+    if [ ! -L /root ]; then
+        echo Linking Home Folder
+        rm -rf /root
+        ln -s /persistent/root /root
+    fi
+
+
+
+    # SSH-Host-Schlüssel generieren, falls nicht vorhanden
+    for keytype in rsa ecdsa ed25519; do
+        keyfile="/etc/ssh/ssh_host_${keytype}_key"
+        [ -f "$keyfile" ] || ssh-keygen -t "$keytype" -f "$keyfile" -N "" -q
+    done
+
+    # Prüfen, ob SSH bereits läuft, bevor es gestartet wird
+    if ! pgrep -x "sshd" > /dev/null; then
+        /usr/sbin/sshd
+    else
+        echo "SSH daemon is already running."
+    fi
+}
+
+start_ssh
+
+/bin/bash
+
+sleep $((10**39))
